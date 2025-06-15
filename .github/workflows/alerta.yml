@@ -1,0 +1,27 @@
+name: Notificación a ntfy.sh cuando hay push a main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notificar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Obtener información del commit
+        id: vars
+        run: |
+          echo "AUTHOR=$(git log -1 --pretty=format:'%an')" >> $GITHUB_ENV
+          echo "COMMIT_URL=https://github.com/${{ github.repository }}/commit/${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Enviar notificación a ntfy.sh
+        run: |
+          curl -X POST \
+            -H "Title: Nuevo Push a main" \
+            -H "Priority: high" \
+            -d "El usuario ${{ env.AUTHOR }} subió cambios. Ver commit: ${{ env.COMMIT_URL }}" \
+            https://ntfy.sh/devops-itla
